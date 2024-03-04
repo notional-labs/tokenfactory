@@ -12,7 +12,7 @@ require (
 	github.com/cometbft/cometbft v0.38.5
 	github.com/cometbft/cometbft-db v0.9.1 // indirect
 	github.com/cosmos/cosmos-proto v1.0.0-beta.4
-	github.com/cosmos/cosmos-sdk v0.50.3
+	github.com/cosmos/cosmos-sdk v0.50.4
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.3
 	github.com/gorilla/mux v1.8.0
