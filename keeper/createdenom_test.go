@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/osmosis-labs/tokenfactory/types"
 )
 
@@ -13,7 +14,7 @@ func (s *KeeperTestSuite) TestMsgCreateDenom() {
 	var (
 		tokenFactoryKeeper = s.App.TokenfactoryKeeper
 		bankKeeper         = s.App.BankKeeper
-		denomCreationFee   = sdk.NewCoins(sdk.NewCoin("uosmo", sdk.NewInt(1000000)))
+		denomCreationFee   = sdk.NewCoins(sdk.NewCoin("uosmo", sdkmath.NewInt(1000000)))
 	)
 
 	// Set the denom creation fee. It is currently turned off in favor
