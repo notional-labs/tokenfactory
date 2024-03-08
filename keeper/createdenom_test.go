@@ -6,21 +6,22 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/osmosis-labs/tokenfactory/types"
 )
 
 func (s *KeeperTestSuite) TestMsgCreateDenom() {
 	var (
-		tokenFactoryKeeper = s.App.TokenfactoryKeeper
+		tokenFactoryKeeper = s.App.TokenFactoryKeeper
 		bankKeeper         = s.App.BankKeeper
-		denomCreationFee   = sdk.NewCoins(sdk.NewCoin("uosmo", sdk.NewInt(1000000)))
+		denomCreationFee   = sdk.NewCoins(sdk.NewCoin("uosmo", sdkmath.NewInt(1000000)))
 	)
 
 	// Set the denom creation fee. It is currently turned off in favor
 	// of gas charge by default.
-	params := s.App.TokenfactoryKeeper.GetParams(s.Ctx)
+	params := s.App.TokenFactoryKeeper.GetParams(s.Ctx)
 	params.DenomCreationFee = denomCreationFee
-	s.App.TokenfactoryKeeper.SetParams(s.Ctx, params)
+	s.App.TokenFactoryKeeper.SetParams(s.Ctx, params)
 
 	// Fund denom creation fee for every execution of MsgCreateDenom.
 	s.FundAcc(s.TestAccs[0], denomCreationFee)
@@ -76,10 +77,10 @@ func (s *KeeperTestSuite) TestCreateDenom() {
 	var (
 		primaryDenom            = "uosmo"
 		secondaryDenom          = "uion"
-		defaultDenomCreationFee = types.Params{DenomCreationFee: sdk.NewCoins(sdk.NewCoin(primaryDenom, sdk.NewInt(50000000)))}
-		twoDenomCreationFee     = types.Params{DenomCreationFee: sdk.NewCoins(sdk.NewCoin(primaryDenom, sdk.NewInt(50000000)), sdk.NewCoin(secondaryDenom, sdk.NewInt(50000000)))}
+		defaultDenomCreationFee = types.Params{DenomCreationFee: sdk.NewCoins(sdk.NewCoin(primaryDenom, sdkmath.NewInt(50000000)))}
+		twoDenomCreationFee     = types.Params{DenomCreationFee: sdk.NewCoins(sdk.NewCoin(primaryDenom, sdkmath.NewInt(50000000)), sdk.NewCoin(secondaryDenom, sdkmath.NewInt(50000000)))}
 		nilCreationFee          = types.Params{DenomCreationFee: nil}
-		largeCreationFee        = types.Params{DenomCreationFee: sdk.NewCoins(sdk.NewCoin(primaryDenom, sdk.NewInt(5000000000)))}
+		largeCreationFee        = types.Params{DenomCreationFee: sdk.NewCoins(sdk.NewCoin(primaryDenom, sdkmath.NewInt(5000000000)))}
 	)
 
 	for _, tc := range []struct {
@@ -141,7 +142,7 @@ func (s *KeeperTestSuite) TestCreateDenom() {
 			if tc.setup != nil {
 				tc.setup()
 			}
-			tokenFactoryKeeper := s.App.TokenfactoryKeeper
+			tokenFactoryKeeper := s.App.TokenFactoryKeeper
 			bankKeeper := s.App.BankKeeper
 			// Set denom creation fee in params
 			s.FundAcc(s.TestAccs[0], defaultDenomCreationFee.DenomCreationFee)
@@ -157,7 +158,7 @@ func (s *KeeperTestSuite) TestCreateDenom() {
 			postCreateBalance := bankKeeper.GetAllBalances(s.Ctx, s.TestAccs[0])
 			if tc.valid {
 				s.Require().NoError(err)
-				s.Require().True(preCreateBalance.Sub(postCreateBalance...).IsEqual(denomCreationFee))
+				s.Require().True(preCreateBalance.Sub(postCreateBalance...).Equal(denomCreationFee))
 
 				// Make sure that the admin is set correctly
 				queryRes, err := s.queryClient.DenomAuthorityMetadata(s.Ctx.Context(), &types.QueryDenomAuthorityMetadataRequest{
@@ -180,7 +181,7 @@ func (s *KeeperTestSuite) TestCreateDenom() {
 			} else {
 				s.Require().Error(err)
 				// Ensure we don't charge if we expect an error
-				s.Require().True(preCreateBalance.IsEqual(postCreateBalance))
+				s.Require().True(preCreateBalance.Equal(postCreateBalance))
 			}
 		})
 	}
@@ -231,7 +232,7 @@ func (s *KeeperTestSuite) TestGasConsume() {
 		s.SetupTest()
 		s.Run(fmt.Sprintf("Case %s", tc.desc), func() {
 			// set params with the gas consume amount
-			s.App.TokenfactoryKeeper.SetParams(s.Ctx, types.NewParams(nil, tc.gasConsume))
+			s.App.TokenFactoryKeeper.SetParams(s.Ctx, types.NewParams(nil, tc.gasConsume))
 
 			// amount of gas consumed prior to the denom creation
 			gasConsumedBefore := s.Ctx.GasMeter().GasConsumed()

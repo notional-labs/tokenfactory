@@ -380,6 +380,7 @@ func (s *KeeperTestSuite) TestChangeAdminDenom() {
 	} {
 		s.Run(fmt.Sprintf("Case %s", tc.desc), func() {
 			// setup test
+
 			s.SetupTest()
 
 			// Create a denom and mint
