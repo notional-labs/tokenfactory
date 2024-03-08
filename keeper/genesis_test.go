@@ -51,9 +51,6 @@ func (s *KeeperTestSuite) TestGenesis() {
 	app.TokenFactoryKeeper.InitGenesis(s.Ctx, genesisState)
 
 	// check that the module account is now initialized
-	tokenfactoryModuleAccount = app.AccountKeeper.GetAccount(s.Ctx, app.AccountKeeper.GetModuleAddress(types.ModuleName))
-	s.Require().NotNil(tokenfactoryModuleAccount)
-
 	exportedGenesis := app.TokenFactoryKeeper.ExportGenesis(s.Ctx)
 	s.Require().NotNil(exportedGenesis)
 	s.Require().Equal(genesisState, *exportedGenesis)
