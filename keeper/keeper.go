@@ -70,11 +70,3 @@ func (k Keeper) GetCreatorsPrefixStore(ctx sdk.Context) store.KVStore {
 func (k *Keeper) SetContractKeeper(contractKeeper types.ContractKeeper) {
 	k.contractKeeper = contractKeeper
 }
-
-// CreateModuleAccount creates a module account with minting and burning capabilities
-// This account isn't intended to store any coins,
-// it purely mints and burns them on behalf of the admin of respective denoms,
-// and sends to the relevant address.
-func (k Keeper) CreateModuleAccount(ctx sdk.Context) {
-	k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
-}

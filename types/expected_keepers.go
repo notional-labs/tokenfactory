@@ -43,3 +43,7 @@ type DistrKeeper interface {
 type ContractKeeper interface {
 	Sudo(ctx sdk.Context, contractAddress sdk.AccAddress, msg []byte) ([]byte, error)
 }
+type AccountKeeper interface {
+	SetModuleAccount(ctx context.Context, macc sdk.ModuleAccountI)
+	GetAccount(ctx context.Context, addr sdk.AccAddress) sdk.AccountI
+}

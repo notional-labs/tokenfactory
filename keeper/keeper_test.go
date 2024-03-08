@@ -1,147 +1,76 @@
-// package keeper_test
+package keeper_test
 
-// import (
-// 	"fmt"
-// 	"os"
-// 	"testing"
-// 	"time"
+import (
+	"testing"
+	"time"
 
-// 	"github.com/cometbft/cometbft/crypto/ed25519"
-// 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-// 	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
-// 	"github.com/cosmos/cosmos-sdk/baseapp"
-// 	"github.com/cosmos/cosmos-sdk/simapp"
-// 	sdk "github.com/cosmos/cosmos-sdk/types"
-// 	"github.com/stretchr/testify/suite"
+	sdkmath "cosmossdk.io/math"
+	"github.com/cometbft/cometbft/crypto/ed25519"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/osmosis-labs/tokenfactory/app/apptesting"
+	"github.com/osmosis-labs/tokenfactory/keeper"
+	"github.com/stretchr/testify/suite"
 
-// 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-// 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-// 	"github.com/osmosis-labs/tokenfactory/keeper"
-// 	"github.com/osmosis-labs/tokenfactory/types"
-// )
+	"github.com/osmosis-labs/tokenfactory/types"
+)
 
-// type KeeperTestSuite struct {
-// 	suite.Suite
+type KeeperTestSuite struct {
+	apptesting.KeeperTestHelper
 
-// 	App         *simapp.SimApp
-// 	Ctx         sdk.Context
-// 	QueryHelper *baseapp.QueryServiceTestHelper
-// 	TestAccs    []sdk.AccAddress
+	queryClient     types.QueryClient
+	msgServer       types.MsgServer
+	bankQueryClient banktypes.QueryClient
 
-// 	queryClient   types.QueryClient
-// 	msgServer     types.MsgServer
-// 	bankMsgServer banktypes.MsgServer
+	// defaultDenom is on the suite, as it depends on the creator test address.
+	defaultDenom string
+}
 
-// 	// defaultDenom is on the suite, as it depends on the creator test address.
-// 	defaultDenom string
-// }
+var (
+	baseTestAccts        = []sdk.AccAddress{}
+	defaultTestStartTime = time.Now().UTC()
+)
 
-// var (
-// 	baseTestAccts        = []sdk.AccAddress{}
-// 	defaultTestStartTime = time.Now().UTC()
-// )
+func init() {
+	baseTestAccts = CreateRandomAccounts(3)
+}
 
-// func init() {
-// 	baseTestAccts = CreateRandomAccounts(3)
-// }
+// CreateRandomAccounts is a function return a list of randomly generated AccAddresses
+func CreateRandomAccounts(numAccts int) []sdk.AccAddress {
+	testAddrs := make([]sdk.AccAddress, numAccts)
+	for i := 0; i < numAccts; i++ {
+		pk := ed25519.GenPrivKey().PubKey()
+		testAddrs[i] = sdk.AccAddress(pk.Address())
+	}
 
-// // CreateRandomAccounts is a function return a list of randomly generated AccAddresses
-// func CreateRandomAccounts(numAccts int) []sdk.AccAddress {
-// 	testAddrs := make([]sdk.AccAddress, numAccts)
-// 	for i := 0; i < numAccts; i++ {
-// 		pk := ed25519.GenPrivKey().PubKey()
-// 		testAddrs[i] = sdk.AccAddress(pk.Address())
-// 	}
+	return testAddrs
+}
 
-// 	return testAddrs
-// }
+func TestKeeperTestSuite(t *testing.T) {
+	suite.Run(t, new(KeeperTestSuite))
+}
 
-// func TestKeeperTestSuite(t *testing.T) {
-// 	suite.Run(t, new(KeeperTestSuite))
-// }
+func (suite *KeeperTestSuite) SetupTest() {
+	suite.Setup()
 
-// func (s *KeeperTestSuite) SetupTest() {
-// 	dir, err := os.MkdirTemp("", "osmosisd-test-home")
-// 	if err != nil {
-// 		panic(fmt.Sprintf("failed creating temporary directory: %v", err))
-// 	}
-// 	s.T().Cleanup(func() { os.RemoveAll(dir) })
-// 	s.App = simapp.Setup(false)
-// 	s.Ctx = s.App.BaseApp.NewContext(false, tmtypes.Header{Height: 1, ChainID: "osmosis-1", Time: defaultTestStartTime})
+	// Fund every TestAcc with two denoms, one of which is the denom creation fee
+	fundAccsAmount := sdk.NewCoins(sdk.NewCoin(types.DefaultParams().DenomCreationFee[0].Denom, types.DefaultParams().DenomCreationFee[0].Amount.MulRaw(100)), sdk.NewCoin("utwo", sdkmath.NewInt(100000000)))
+	for _, acc := range suite.TestAccs {
+		suite.FundAcc(acc, fundAccsAmount)
+	}
 
-// 	s.QueryHelper = &baseapp.QueryServiceTestHelper{
-// 		GRPCQueryRouter: s.App.GRPCQueryRouter(),
-// 		Ctx:             s.Ctx,
-// 	}
+	suite.queryClient = types.NewQueryClient(suite.QueryHelper)
+	suite.bankQueryClient = banktypes.NewQueryClient(suite.QueryHelper)
+	suite.msgServer = keeper.NewMsgServerImpl(suite.App.TokenFactoryKeeper)
+}
 
-// 	s.TestAccs = []sdk.AccAddress{}
-// 	s.TestAccs = append(s.TestAccs, baseTestAccts...)
+// FundAcc funds target address with specified amount.
+func (suite *KeeperTestSuite) CreateDefaultDenom() {
+	res, _ := suite.msgServer.CreateDenom(suite.Ctx, types.NewMsgCreateDenom(suite.TestAccs[0].String(), "bitcoin"))
+	suite.defaultDenom = res.GetNewTokenDenom()
+}
 
-// 	s.queryClient = types.NewQueryClient(s.QueryHelper)
-// 	s.msgServer = keeper.NewMsgServerImpl(s.App.TokenfactoryKeeper)
-// 	s.bankMsgServer = bankkeeper.NewMsgServerImpl(s.App.BankKeeper)
-// }
-
-// // FundAcc funds target address with specified amount.
-// func (s *KeeperTestSuite) FundAcc(acc sdk.AccAddress, amounts sdk.Coins) {
-// 	err := simapp.FundAccount(s.App.BankKeeper, s.Ctx, acc, amounts)
-// 	s.Require().NoError(err)
-// }
-
-// func (s *KeeperTestSuite) CreateDefaultDenom() {
-// 	res, _ := s.msgServer.CreateDenom(sdk.WrapSDKContext(s.Ctx), types.NewMsgCreateDenom(s.TestAccs[0].String(), "bitcoin"))
-// 	s.defaultDenom = res.GetNewTokenDenom()
-// }
-
-// func (s *KeeperTestSuite) TestCreateModuleAccount() {
-// 	app := s.App
-
-// 	// setup new next account number
-// 	nextAccountNumber := app.AccountKeeper.NextAccountNumber(s.Ctx)
-
-// 	// remove module account
-// 	tokenfactoryModuleAccount := app.AccountKeeper.GetAccount(s.Ctx, app.AccountKeeper.GetModuleAddress(types.ModuleName))
-// 	app.AccountKeeper.RemoveAccount(s.Ctx, tokenfactoryModuleAccount)
-
-// 	// ensure module account was removed
-// 	s.Ctx = app.BaseApp.NewContext(false, tmproto.Header{})
-// 	tokenfactoryModuleAccount = app.AccountKeeper.GetAccount(s.Ctx, app.AccountKeeper.GetModuleAddress(types.ModuleName))
-// 	s.Require().Nil(tokenfactoryModuleAccount)
-
-// 	// create module account
-// 	app.TokenfactoryKeeper.CreateModuleAccount(s.Ctx)
-
-// 	// check that the module account is now initialized
-// 	tokenfactoryModuleAccount = app.AccountKeeper.GetAccount(s.Ctx, app.AccountKeeper.GetModuleAddress(types.ModuleName))
-// 	s.Require().NotNil(tokenfactoryModuleAccount)
-
-// 	// check that the account number of the module account is now initialized correctly
-// 	s.Require().Equal(nextAccountNumber+1, tokenfactoryModuleAccount.GetAccountNumber())
-// }
-
-// func (s *KeeperTestSuite) SetupTestForInitGenesis() {
-// 	// Setting to True, leads to init genesis not running
-// 	s.App = simapp.Setup(true)
-// 	s.Ctx = s.App.BaseApp.NewContext(true, tmtypes.Header{})
-// }
-
-// // AssertEventEmitted asserts that ctx's event manager has emitted the given number of events
-// // of the given type.
-// func (s *KeeperTestSuite) AssertEventEmitted(ctx sdk.Context, eventTypeExpected string, numEventsExpected int) {
-// 	allEvents := ctx.EventManager().Events()
-// 	// filter out other events
-// 	actualEvents := make([]sdk.Event, 0)
-// 	for _, event := range allEvents {
-// 		if event.Type == eventTypeExpected {
-// 			actualEvents = append(actualEvents, event)
-// 		}
-// 	}
-// 	s.Require().Equal(numEventsExpected, len(actualEvents))
-// }
-
-// // FundModuleAcc funds target modules with specified amount.
-// func (s *KeeperTestSuite) FundModuleAcc(moduleName string, amounts sdk.Coins) {
-// 	err := simapp.FundModuleAccount(s.App.BankKeeper, s.Ctx, moduleName, amounts)
-// 	s.Require().NoError(err)
-// }
+func (suite *KeeperTestSuite) OverrideMsgServer(newKeeper keeper.Keeper) {
+	suite.msgServer = keeper.NewMsgServerImpl(newKeeper)
+}
