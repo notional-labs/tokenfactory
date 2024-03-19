@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"sort"
+	"time"
 
 	wasmd "github.com/CosmWasm/wasmd/app"
 	"github.com/CosmWasm/wasmd/x/wasm"
@@ -593,7 +595,14 @@ func NewApp(
 		govModAddress,
 	)
 
-	wasmDir := filepath.Join(homePath, "wasm")
+	// Initialize the random seed.
+	var localRand = rand.New(rand.NewSource(time.Now().UnixNano()))
+	randomNumber := localRand.Int63()
+	wasmDir := filepath.Join(homePath, "wasm") // folder for all wasm vms
+
+	// TODO: Workaround: wasmd2.0 does not allow multiple wasm instance running on the same folder
+	// do this since test run on parallel. Should use deterministic manner to avoid flaky tests
+	wasmDir = filepath.Join(wasmDir, fmt.Sprintf("wasm_%d", randomNumber))
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
 	if err != nil {
 		panic(fmt.Sprintf("error while reading wasm config: %s", err))

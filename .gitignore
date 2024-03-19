@@ -255,3 +255,8 @@ docs/protocol/book
 
 # Release folder
 dist/
+
+
+# Ignore tests file generate
+bindings/wasm
+keeper/wasm
