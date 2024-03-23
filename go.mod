@@ -15,7 +15,7 @@ require (
 	github.com/cometbft/cometbft-db v0.9.1 // indirect
 	github.com/cosmos/cosmos-proto v1.0.0-beta.4
 	github.com/cosmos/cosmos-sdk v0.50.4
-	github.com/gogo/protobuf v1.3.3
+	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.3
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
@@ -28,12 +28,9 @@ require (
 	google.golang.org/grpc v1.60.1
 )
 
-// core v0.12 was tagged wrong (SDK v51)
-replace cosmossdk.io/core => cosmossdk.io/core v0.11.0
-
 require (
 	cosmossdk.io/client/v2 v2.0.0-beta.1
-	cosmossdk.io/core v0.12.0
+	cosmossdk.io/core v0.11.0
 	cosmossdk.io/log v1.3.1
 	cosmossdk.io/x/circuit v0.1.0
 	cosmossdk.io/x/evidence v0.1.0
@@ -58,7 +55,7 @@ require (
 	filippo.io/edwards25519 v1.0.0 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.1 // indirect
-	github.com/CosmWasm/wasmvm/v2 v2.0.0-rc.2 // indirect
+	github.com/CosmWasm/wasmvm/v2 v2.0.0-rc.2
 	github.com/DataDog/datadog-go v3.2.0+incompatible // indirect
 	github.com/DataDog/zstd v1.5.5 // indirect
 	github.com/aws/aws-sdk-go v1.44.224 // indirect
@@ -206,7 +203,7 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-// use cosmos-compatible protobufs
-replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-
-replace github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.50.4
+replace (
+	cosmossdk.io/core => cosmossdk.io/core v0.11.0
+	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.50.4
+)
