@@ -255,3 +255,7 @@ docs/protocol/book
 
 # Release folder
 dist/
+
+
+bindings/wasm
+keeper/wasm

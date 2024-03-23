@@ -15,7 +15,6 @@ for dir in $proto_dirs; do
     # gogo proto files SHOULD ONLY be generated if this is false
     # we don't want gogo proto to run for proto files which are natively built for google.golang.org/protobuf
    if grep go_package $file &>/dev/null; then
-      echo "Current directory: $(pwd)"
       buf generate --template buf.gen.gogo.yaml $file
     fi
   done
