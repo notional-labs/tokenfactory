@@ -4,6 +4,8 @@ package tokenfactory.v1beta1;
 import "gogoproto/gogo.proto";
 import "cosmos/base/v1beta1/coin.proto";
 import "cosmos/bank/v1beta1/bank.proto";
+import "cosmos_proto/cosmos.proto";
+import "cosmos/msg/v1/msg.proto";
 
 option go_package = "github.com/osmosis-labs/tokenfactory/types";
 
@@ -28,6 +30,7 @@ service Msg {
 // originally set to be the creator, but this can be changed later. The token
 // denom does not indicate the current admin.
 message MsgCreateDenom {
+  option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1 [ (gogoproto.moretags) = "yaml:\"sender\"" ];
   // subdenom can be up to 44 "alphanumeric" characters long.

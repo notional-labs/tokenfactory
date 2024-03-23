@@ -201,8 +201,9 @@ docs:
 	@echo
 .PHONY: docs
 
-protoVer=v0.9
-protoImageName=osmolabs/osmo-proto-gen:$(protoVer)
+protoVer=0.14.0
+protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
+protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName)
 containerProtoGen=cosmos-sdk-proto-gen-$(protoVer)
 containerProtoFmt=cosmos-sdk-proto-fmt-$(protoVer)
 
@@ -220,8 +221,6 @@ proto-image-build:
 
 proto-image-push:
 	docker push $(protoImageName)
-
-
 
 ###############################################################################
 ###                           Tests & Simulation                            ###
@@ -265,7 +264,7 @@ test-sim-nondeterminism:
 	@echo "Running non-determinism test..."
 	@go test -mod=readonly $(SIMAPP) -run TestAppStateDeterminism -Enabled=true \
 		-NumBlocks=100 -BlockSize=200 -Commit=true -Period=0 -v -timeout 24h
-
+ 
 test-sim-custom-genesis-fast:
 	@echo "Running custom genesis simulation..."
 	@echo "By default, ${HOME}/.gaiad/config/genesis.json will be used."
